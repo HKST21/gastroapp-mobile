@@ -8,6 +8,7 @@ import * as AppleAuthentication from 'expo-apple-authentication';
 import * as WebBrowser from 'expo-web-browser';
 import {Platform} from 'react-native';
 import {addUserToStore, loadUserFromStore} from "../services/AuthStorage.";
+import {Vibration} from "react-native";
 
 // Inicializace WebBrowser pro OAuth
 WebBrowser.maybeCompleteAuthSession();
@@ -34,6 +35,7 @@ export default function Login() {
     // potřebujeme zjistit jestli je uživatel už přihlášený
     useEffect(() => {
         checkLoginStatus()
+        Vibration.vibrate()
     },[])
 
     const checkLoginStatus = async () => {

@@ -37,3 +37,11 @@ export interface UserVoucher {
 export interface Vouchers {
     vouchers: Voucher[]
 }
+export interface Item {
+    key: number,
+    title: string,
+    text: string,
+    image: string,
+    backgroundColor: string,
+}
+

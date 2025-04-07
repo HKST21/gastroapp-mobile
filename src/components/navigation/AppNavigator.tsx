@@ -10,17 +10,21 @@ import Novinky from "../screens/Novinky";
 import Objednat from "../screens/Objednat";
 import WelcomeLoading from "../screens/WelcomeLoading";
 import Login from "../screens/Login";
+import IntroSlider from "../screens/IntroSlider";
 
 
 export default function AppNavigator() {
 
-    const [isLoading, setIsLoading] = useState(true);
+    const [isLoading, setIsLoading] = useState<1|2|3>(1);
     const [isLoggedIn, setIsLoggedIn] = useState(false);
 
     useEffect(() => {
         setTimeout(() => {
-            setIsLoading(false)
-        }, 3000)
+            setIsLoading(2)
+        }, 3000);
+        setTimeout(() => {
+            setIsLoading(3)
+        }, 15000);
     }, [])
 
     const Stack = createNativeStackNavigator();
@@ -28,7 +32,8 @@ export default function AppNavigator() {
     return (
         <NavigationContainer>
             <Stack.Navigator screenOptions={{headerShown: false}}>
-                {isLoading ? <Stack.Screen name={"WelcomeLoading"} component={WelcomeLoading}/>
+                {isLoading === 1 ? <Stack.Screen name={"WelcomeLoading"} component={WelcomeLoading}/> :
+                    isLoading === 2 ? <Stack.Screen name={"IntroSlider"} component={IntroSlider}/>
                     : !isLoggedIn ?
                         <Stack.Screen name={"Login"} component={Login}/> :
                         <Stack.Screen name="MainApp" component={MainTabNavigator}/>
