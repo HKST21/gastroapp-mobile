@@ -1,12 +1,13 @@
-import { StyleSheet, View, Text, Pressable } from 'react-native';
-import { useState } from "react";
-import { User } from "../models/interfaces";
-import { frontendClass } from "../services/FeClass";
+import {StyleSheet, View, Text, Pressable} from 'react-native';
+import {useState, useEffect} from "react";
+import {User} from "../models/interfaces";
+import {frontendClass} from "../services/FeClass";
 import Toast from "react-native-toast-message";
 import * as Google from 'expo-auth-session/providers/google';
 import * as AppleAuthentication from 'expo-apple-authentication';
 import * as WebBrowser from 'expo-web-browser';
-import { Platform } from 'react-native';
+import {Platform} from 'react-native';
+import {addUserToStore, loadUserFromStore} from "../services/AuthStorage.";
 
 // Inicializace WebBrowser pro OAuth
 WebBrowser.maybeCompleteAuthSession();
@@ -30,6 +31,27 @@ export default function Login() {
         scopes: ['profile', 'email']
     });
 
+    // potřebujeme zjistit jestli je uživatel už přihlášený
+    useEffect(() => {
+        checkLoginStatus()
+    },[])
+
+    const checkLoginStatus = async () => {
+
+        try {
+            const storedUser = await loadUserFromStore();
+
+            if (storedUser) {
+                setLoggedUser(storedUser);
+                setIsSigned(true);
+            } else {
+                console.log("Žádný uživatel v úložišti, je třeba se přihlásit");
+            }
+        } catch (error) {
+            console.error("Chyba při kontrole přihlášení:", error);
+        }
+    }
+
     /**
      * Funkce pro přihlášení přes Google
      */
@@ -42,7 +64,7 @@ export default function Login() {
             if (result.type === "success" && result.authentication) {
                 // Získání informací o uživateli pomocí access tokenu
                 const userInfoResponse = await fetch('https://www.googleapis.com/userinfo/v2/me', {
-                    headers: { Authorization: `Bearer ${result.authentication.accessToken}` }
+                    headers: {Authorization: `Bearer ${result.authentication.accessToken}`}
                 });
                 const googleUser = await userInfoResponse.json();
 
@@ -71,6 +93,8 @@ export default function Login() {
                 // Aktualizace stavu aplikace
                 setLoggedUser(registeredUser);
                 setIsSigned(true);
+                // přidáme uživatele do store, aby byl neustále přihlášen
+                await addUserToStore(registeredUser);
 
                 // Zobrazení notifikace o úspěšném přihlášení
                 Toast.show({
@@ -148,6 +172,8 @@ export default function Login() {
             // Aktualizace stavu aplikace
             setLoggedUser(registeredUser);
             setIsSigned(true);
+            // přidáme uživatele do storu, aby byl neustále přihlášen
+            await addUserToStore(registeredUser);
 
             // Zobrazení notifikace o úspěšném přihlášení
             Toast.show({
@@ -167,21 +193,24 @@ export default function Login() {
 
     return (
         <View style={styles.mainContainer}>
-            <View>
-                <Pressable onPress={handleGoogleSignIn}>
-                    <Text>
-                        login with google
-                    </Text>
-                </Pressable>
-            </View>
+            {loggedUser ? <Text>Ahoj {loggedUser.firstName} rádi tě u nás vidíme :)</Text> :
+                <View>
+                    <View>
+                        <Pressable onPress={handleGoogleSignIn}>
+                            <Text>
+                                login with google
+                            </Text>
+                        </Pressable>
+                    </View>
 
-            <View>
-                <Pressable onPress={handleAppleSignIn}>
-                    <Text>
-                        login with apple
-                    </Text>
-                </Pressable>
-            </View>
+                    <View>
+                        <Pressable onPress={handleAppleSignIn}>
+                            <Text>
+                                login with apple
+                            </Text>
+                        </Pressable>
+                    </View>
+                </View>}
         </View>
     )
 }
