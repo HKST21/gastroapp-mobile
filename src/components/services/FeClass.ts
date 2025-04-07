@@ -7,38 +7,42 @@ export default class FeClass {
 
     }
 
-    ApiUrl = "https://mujserver.cz"
+    ApiUrl = "https://gastroapp-backend.onrender.com/api/pizzalab"
 
     async registerUser(user: User) {
-    // PŘIPRAVENÁ FUNKCE NA POSTOVÁNÍ UŽIVATELE NA ENDPOINT
         try {
-            const response = await fetch(this.ApiUrl, {
+            const response = await fetch(`${this.ApiUrl}/users`, {
                 method: "POST",
                 headers: {
                     "Content-Type": "application/json",
                 },
-                body: JSON.stringify({user})
+                body: JSON.stringify(user)
             });
+
+            // Získání a parsování response v jednom kroku
+            const responseText = await response.text();
+            console.log("➡️ Backend odpověděl:", response.status, responseText);
+
             if (!response.ok) {
-                const responseText = await response.text();
+                throw new Error(`Connected to Server, but received status ${response.status}`);
+            }
 
-                throw new Error(`Connected to Server, but received status ${response.status} and text: ${responseText}`);
-                ;
-            };
-
-            return await response.json();
+            // Pokus parsovat text jako JSON
+            try {
+                return JSON.parse(responseText);
+            } catch (e) {
+                console.error("Nelze parsovat odpověď jako JSON:", e);
+                throw new Error("Invalid JSON response from server");
+            }
         }
         catch (error) {
             if (error instanceof TypeError) {
-                // fetch failed we didn't even connect the server
                 console.error(`Unable to connect server with this status ${error.message}`);
             } else {
-                // caught error from if(!response.ok) or other coding error (mistake in json etc.)
                 console.error(`Failed to connect server with this error: ${error}`);
             }
-
+            throw error; // Propagujeme chybu dál
         }
-
     }
 };
 

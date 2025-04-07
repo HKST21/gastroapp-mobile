@@ -16,6 +16,8 @@ const styles = StyleSheet.create({
     mainContainer: {
         flex: 1,
         flexDirection: 'column',
+        justifyContent: 'center', // vertikalní zarovnání
+        alignItems: 'center', // hori
     },
     h1: {
         fontSize: 20,
