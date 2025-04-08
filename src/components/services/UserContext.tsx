@@ -1,6 +1,7 @@
 import React, {createContext, useState, useContext, useEffect, ReactNode} from "react";
 import {addUserToStore, loadUserFromStore} from "./AuthStorage";
 import {User} from "../models/interfaces";
+import {frontendClass} from "./FeClass";
 
 /*JAK TOTO CELÉ FUNGUJE:
 * JAK TOTO CELÉ FUNGUJE:
@@ -50,17 +51,30 @@ export const UserProvider = ({children}: UserProviderProps) => {
     useEffect(() => {
         const loadUser = async () => {
             try {
-                const user = await loadUserFromStore();
-                if (user) {
-                    setLoggedUser(user);
+                const userFromSecureStore = await loadUserFromStore();
+                if (userFromSecureStore) {
+                    setLoggedUser(userFromSecureStore);
                 }
+
+                try {
+                    const userFromDB = await frontendClass.getUserById(userFromSecureStore.id);
+                    // Použijeme updateLoggedUser, který aktualizuje stav i SecureStore
+                    if (userFromDB) {
+                        await updateLoggedUser(userFromDB);
+                    }
+
+                }
+                catch (e) {
+                    console.error('Chyba při aktualizaci dat uživatele:', e);
+                }
+
             } catch (e) {
                 console.error('Chyba při načítání uživatele ze secure store', e);
             }
         };
         loadUser();
     }, []);
-
+    // ZDE VOLÁME UKLÁDÁNÍ DO STORU A NASTAVOVÁNÍ STAVU, UPDATUJEME REACT STAV I STORE STAV :)
     const updateLoggedUser = async (user: User): Promise<boolean> => {
         try {
             if (user) {

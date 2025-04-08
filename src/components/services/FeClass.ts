@@ -7,7 +7,8 @@ export default class FeClass {
 
     }
 
-    ApiUrl = "https://gastroapp-backend.onrender.com/api/pizzalab"
+    ApiUrl = "https://gastroapp-backend.onrender.com/api/pizzalab";
+
 
     async registerUser(user: User) {
         try {
@@ -34,8 +35,7 @@ export default class FeClass {
                 console.error("Nelze parsovat odpověď jako JSON:", e);
                 throw new Error("Invalid JSON response from server");
             }
-        }
-        catch (error) {
+        } catch (error) {
             if (error instanceof TypeError) {
                 console.error(`Unable to connect server with this status ${error.message}`);
             } else {
@@ -44,6 +44,32 @@ export default class FeClass {
             throw error; // Propagujeme chybu dál
         }
     }
+
+    /**
+     * Získá aktuální data uživatele z backendu
+     * @param userId ID uživatele
+     * @returns Aktualizovaný uživatelský objekt nebo null v případě chyby
+     */
+    async getUserById(userId: string): Promise<User | null> {
+        try {
+            const response = await fetch(`${this.ApiUrl}/users/${userId}`, {
+                method: 'GET',
+                headers: {
+                    'Content-Type': 'application/json'
+                }
+            });
+
+            if (!response.ok) {
+                throw new Error(`Chyba při načítání uživatele: ${response.status}`);
+            }
+
+            return await response.json();
+        } catch (error) {
+            console.error('Chyba při získávání uživatele z backendu:', error);
+            return null;
+        }
+    }
+
 };
 
 export const frontendClass = new FeClass();

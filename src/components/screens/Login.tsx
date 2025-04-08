@@ -179,7 +179,8 @@ export default function Login() {
 
     return (
         <View style={styles.mainContainer}>
-            {loggedUser ? <Text>Ahoj {loggedUser.firstName} rádi tě u nás vidíme :)</Text> :
+            {loggedUser ? <Text>Ahoj {loggedUser.firstName} rádi tě u nás vidíme máš od nás {loggedUser.vouchers?.length} voucherů!
+                    Na uvítanou ti navíc dáváme {loggedUser.tokens} bodů, které můžeš využít na uplatnění vip voucheru :)</Text> :
                 <View>
                     <View>
                         <Pressable onPress={handleGoogleSignIn}>
