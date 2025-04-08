@@ -7,8 +7,9 @@ import * as Google from 'expo-auth-session/providers/google';
 import * as AppleAuthentication from 'expo-apple-authentication';
 import * as WebBrowser from 'expo-web-browser';
 import {Platform} from 'react-native';
-import {addUserToStore, loadUserFromStore} from "../services/AuthStorage.";
+import {addUserToStore, loadUserFromStore} from "../services/AuthStorage";
 import {Vibration} from "react-native";
+import {useUser} from "../services/UserContext";
 
 // Inicializace WebBrowser pro OAuth
 WebBrowser.maybeCompleteAuthSession();
@@ -19,8 +20,9 @@ const GOOGLE_IOS_CLIENT_ID = "Tvoje client ID pro iOS";
 const GOOGLE_EXPO_CLIENT_ID = "Client ID pro vývoj v Expo prostředí";
 
 export default function Login() {
-    const [isSigned, setIsSigned] = useState(false);
-    const [loggedUser, setLoggedUser] = useState<User | null>(null);
+
+    const {loggedUser, setLoggedUser} = useUser()
+
 
     // Hook pro Google přihlášení - musí být na nejvyšší úrovni komponenty
     const [request, response, promptAsync] = Google.useAuthRequest({
@@ -34,25 +36,11 @@ export default function Login() {
 
     // potřebujeme zjistit jestli je uživatel už přihlášený
     useEffect(() => {
-        checkLoginStatus()
+
         Vibration.vibrate()
     },[])
 
-    const checkLoginStatus = async () => {
 
-        try {
-            const storedUser = await loadUserFromStore();
-
-            if (storedUser) {
-                setLoggedUser(storedUser);
-                setIsSigned(true);
-            } else {
-                console.log("Žádný uživatel v úložišti, je třeba se přihlásit");
-            }
-        } catch (error) {
-            console.error("Chyba při kontrole přihlášení:", error);
-        }
-    }
 
     /**
      * Funkce pro přihlášení přes Google
@@ -93,10 +81,8 @@ export default function Login() {
                 }
 
                 // Aktualizace stavu aplikace
-                setLoggedUser(registeredUser);
-                setIsSigned(true);
-                // přidáme uživatele do store, aby byl neustále přihlášen
-                await addUserToStore(registeredUser);
+                await setLoggedUser(registeredUser);
+
 
                 // Zobrazení notifikace o úspěšném přihlášení
                 Toast.show({
@@ -172,10 +158,8 @@ export default function Login() {
             }
 
             // Aktualizace stavu aplikace
-            setLoggedUser(registeredUser);
-            setIsSigned(true);
-            // přidáme uživatele do storu, aby byl neustále přihlášen
-            await addUserToStore(registeredUser);
+            await setLoggedUser(registeredUser);
+
 
             // Zobrazení notifikace o úspěšném přihlášení
             Toast.show({
